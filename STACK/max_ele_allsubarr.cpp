@@ -8,48 +8,63 @@ const int mod = 1000000007;
 #include <ext/pb_ds/tree_policy.hpp>
 using namespace __gnu_pbds;
 typedef tree<int, null_type,less<int>, rb_tree_tag,tree_order_statistics_node_update> pbds; //find_by_order //order_of_key
-    long long findMaxSum(vector <int> arr, int n)
-{
-    // Arrays for maintaining left and right count
-   // int CL[n] = { 0 }, CR[n] = { 0 };
-   vector <long long> CL(n,0) , CR(n,0);
+vector <int> NGE(vector <int> &nums) {
+    int n = nums.size();
+    stack <int> st;
+    vector <int> ans;
 
-    // Stack for storing the indexes
-    stack<long long> q;
- 
-    // Calculate left count for every index
-    for (int i = 0; i < n; i++) {
-        while (q.size() != 0 && arr[q.top()] <= arr[i]) {
-            CL[i] += CL[q.top()] + 1;
-            q.pop();
+    for(int i = n-1 ; i >= 0 ; i--) {
+        if(st.empty()) ans.push_back(n);
+
+        else if(!st.empty() && nums[st.top()] >= nums[i]) {
+            ans.push_back(st.top());
         }
-        q.push(i);
-    }
- 
-    // Clear the stack
-    while (q.size() != 0)
-        q.pop();
- 
-    // Calculate right count for every index
-    for (int i = n - 1; i >= 0; i--) {
-        while (q.size() != 0 && arr[q.top()] < arr[i]) {
-            CR[i] += CR[q.top()] + 1;
-            q.pop();
+
+        else if(!st.empty() && nums[st.top()] < nums[i]) {
+            while(!st.empty() && nums[st.top()] < nums[i]) {
+                st.pop();
+            }
+
+            if(st.empty()) ans.push_back(n);
+
+            else if(!st.empty() && nums[st.top()] >= nums[i]) {
+                ans.push_back(st.top());
+            }
         }
-        q.push(i);
+        st.push(i);
     }
- 
-    // Clear the stack
-    while (q.size() != 0)
-        q.pop();
- 
-    // To store the required sum
-    long long ans = 0;
- 
-    // Calculate the final sum
-    for (int i = 0; i < n; i++)
-        ans += (CL[i] + 1) * (CR[i] + 1) * arr[i];
- 
+
+    reverse(ans.begin() , ans.end());
+    return ans;
+}
+
+vector <int> PGE(vector <int> &nums) {
+    int n = nums.size();
+    vector <int> ans;
+    stack <int> st;
+
+    for(int i = 0 ; i < n ; i++) {
+        if(st.empty()) ans.push_back(-1);
+
+        else if(!st.empty() && nums[st.top()] > nums[i]) {
+            ans.push_back(st.top());
+        }
+
+        else if(!st.empty() && nums[st.top()] <= nums[i]) { //equal to lgaya to avoid dupicate claculation 
+        // -> you can in next greater ot prev greater in any one case
+            while(!st.empty() && nums[st.top()] <= nums[i]) {
+                st.pop();
+            }
+
+            if(st.empty()) ans.push_back(-1);
+
+            else if(!st.empty() && nums[st.top()] > nums[i]) {
+                ans.push_back(st.top());
+            }
+        }
+        st.push(i);
+    }
+
     return ans;
 }
 int main(){
@@ -62,7 +77,20 @@ cin>>n;
 vector <int> arr(n);
 for(int i=0;i<n;i++) cin>>arr[i];
 
-int ans = findMaxSum(arr , n);
+vector <int> vng = NGE(arr);
+vector <int> vpg = PGE(arr);
+
+//Calculate the final sum
+long long ans = 0;
+for(int i = 0 ; i < n ; i++) {
+    long long l = i - vpg[i];
+    long long r = vng[i] - i;
+
+    long long totalWays = (l * r);
+
+    ans += (1LL * totalWays * arr[i]);
+    ans %= mod;
+}
 
 cout<<ans<<"\n";
 return 0;

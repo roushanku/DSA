@@ -1,4 +1,4 @@
-//https://www.geeksforgeeks.org/sum-of-minimum-elements-of-all-possible-sub-arrays-of-an-array/?ref=ml_lbp
+// https://www.youtube.com/watch?v=HRQB7-D2bi0
 // J.S.R -- *roush*
 
 //This will not work for duplicat ele in arr -> [3,1,4,1] -> o/p = 17 but it should be 15
@@ -11,53 +11,64 @@ const int mod = 1000000007;
 using namespace __gnu_pbds;
 typedef tree<int, null_type,less<int>, rb_tree_tag,tree_order_statistics_node_update> pbds; //find_by_order //order_of_key
     const int mod = 1e9 + 7;
-    long long findMinSum(vector <int> arr, int n)
-{
-    // Arrays for maintaining left and right count
-    //int CL[n] = { 0 }, CR[n] = { 0 };
-    vector <long long> CL(n,0) , CR(n,0);
- 
-    // Stack for storing the indexes
-    stack<long long> q;
- 
-    // Calculate left count for every index
-    for (int i = 0; i < n; i++) {
-        while (q.size() != 0 && arr[q.top()] >= arr[i]) {
-            CL[i] += CL[q.top()] + 1;
-            q.pop();
-        }
-        q.push(i);
-    }
- 
-    // Clear the stack
-    while (q.size() != 0)
-        q.pop();
- 
-    // Calculate right count for every index
-    for (int i = n - 1; i >= 0; i--) {
-        while (q.size() != 0 && arr[q.top()] > arr[i]) {
-            CR[i] += CR[q.top()] + 1;
-            q.pop();
-        }
-        q.push(i);
-    }
- 
-    // Clear the stack
-    while (q.size() != 0)
-        q.pop();
- 
-    // To store the required sum
-    long long ans = 0;
- 
-    // Calculate the final sum
-    for (int i = 0; i < n; i++){
-        ans += (1LL * CL[i] + 1) * (CR[i] + 1) * arr[i];
-        ans %= mod;
-    }
-        
+    vector <int> NSE(vector <int> &nums) {
+        int n = nums.size();
+        stack <int> st;
+        vector <int> ans;
 
-    return (int) ans;
-}
+        for(int i = n-1 ; i >= 0 ; i--) {
+            if(st.empty()) ans.push_back(n);
+
+            else if(!st.empty() && nums[st.top()] <= nums[i]) {
+                ans.push_back(st.top());
+            }
+
+            else if(!st.empty() && nums[st.top()] > nums[i]) {
+                while(!st.empty() && nums[st.top()] > nums[i]) {
+                    st.pop();
+                }
+
+                if(st.empty()) ans.push_back(n);
+
+                else if(!st.empty() && nums[st.top()] <= nums[i]) {
+                    ans.push_back(st.top());
+                }
+            }
+            st.push(i);
+        }
+
+        reverse(ans.begin() , ans.end());
+        return ans;
+    }
+
+    vector <int> PSE(vector <int> &nums) {
+        int n = nums.size();
+        vector <int> ans;
+        stack <int> st;
+
+        for(int i = 0 ; i < n ; i++) {
+            if(st.empty()) ans.push_back(-1);
+
+            else if(!st.empty() && nums[st.top()] < nums[i]) {
+                ans.push_back(st.top());
+            }
+
+            else if(!st.empty() && nums[st.top()] >= nums[i]) { //equal to lgaya to avoid dupicate claculation -> you can in next smaller ot prev smaller in any one case
+                while(!st.empty() && nums[st.top()] >= nums[i]) {
+                    st.pop();
+                }
+
+                if(st.empty()) ans.push_back(-1);
+
+                else if(!st.empty() && nums[st.top()] < nums[i]) {
+                    ans.push_back(st.top());
+                }
+            }
+            st.push(i);
+        }
+
+        return ans;
+    }
 int main(){
 ios_base::sync_with_stdio(false);
 cin.tie(NULL);
@@ -68,7 +79,20 @@ cin>>n;
 vector <int> arr(n);
 for(int i=0;i<n;i++) cin>>arr[i];
 
-int ans = findMinSum(arr , n);
+vector <int> vns = NSE(arr);
+vector <int> vps = PSE(arr);
+
+//Calculate the final sum
+long long ans = 0;
+for(int i = 0 ; i < n ; i++) {
+    long long l = i - vps[i];
+    long long r = vns[i] - i;
+
+    long long totalWays = (l * r);
+
+    ans += (1LL * totalWays * arr[i]);
+    ans %= mod;
+}
 
 cout<<ans<<"\n";
 return 0;
