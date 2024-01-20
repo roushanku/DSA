@@ -1,7 +1,6 @@
 // https://www.youtube.com/watch?v=HRQB7-D2bi0
 // J.S.R -- *roush*
 
-//This will not work for duplicat ele in arr -> [3,1,4,1] -> o/p = 17 but it should be 15
 #include<iostream>
 #include<bits/stdc++.h>
 using namespace std;
